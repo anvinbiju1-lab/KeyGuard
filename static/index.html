@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeyGuard — Zero-Knowledge Password Strength & Breach Auditor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#111827',
+              950: '#0b0f19',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-200 antialiased selection:bg-slate-800 selection:text-slate-100">
+
+  <!-- Top Announcement / Trust Banner -->
+  <div class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur">
+    <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs font-medium text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </span>
+        <span><strong class="text-slate-200">Zero-Knowledge Architecture:</strong> Your password never leaves your device in plain text.</span>
+      </div>
+      <button id="themeToggleBtn" aria-label="Toggle Theme" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
+        <svg id="sunIcon" class="w-3.5 h-3.5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg id="moonIcon" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl mx-auto px-4 py-10 md:py-16 space-y-8">
+
+    <!-- Header Section -->
+    <header class="text-center space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium shadow-sm">
+        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span>KeyGuard Auditor v1.0</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-100">
+        Password Entropy & Breach Auditor
+      </h1>
+      <p class="text-sm md:text-base text-slate-400 max-w-xl mx-auto font-normal">
+        Evaluate mathematical entropy, verify character diversity, and query 850M+ breached credentials via k-Anonymity without transmitting plain text.
+      </p>
+    </header>
+
+    <!-- Card 1: Password Input & Live Gauge -->
+    <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl shadow-slate-950/50 enterprise-card space-y-5">
+      <div class="flex items-center justify-between">
+        <label for="passwordInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Password Input
+        </label>
+        <span id="liveStatusText" class="text-xs font-medium text-slate-500">
+          Ready to audit
+        </span>
+      </div>
+
+      <!-- Input Bar Container -->
+      <div class="relative flex items-center">
+        <input
+          type="password"
+          id="passwordInput"
+          placeholder="Enter a password or passphrase..."
+          autocomplete="off"
+          spellcheck="false"
+          class="w-full bg-slate-950 border border-slate-800 focus:border-slate-600 focus:ring-1 focus:ring-slate-600 rounded-xl px-4 py-3.5 pr-24 font-mono text-sm md:text-base text-slate-100 placeholder-slate-600 transition-all outline-none"
+        />
+
+        <!-- Right Input Actions -->
+        <div class="absolute right-3 flex items-center gap-1">
+          <!-- Visibility Toggle -->
+          <button
+            id="toggleVisibilityBtn"
+            type="button"
+            title="Toggle Visibility"
+            aria-label="Toggle Password Visibility"
+            class="p-2 text-slate-500 hover:text-slate-300 rounded-lg hover:bg-slate-800/60 transition-colors"
+          >
+            <svg id="eyeIcon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <svg id="eyeOffIcon" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908A8.982 8.982 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m-4.692-4.692a3 3 0 00-4.243-4.243" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+            </svg>
+          </button>
+
+          <!-- Clear Input -->
+          <button
+            id="clearInputBtn"
+            type="button"
+            title="Clear Password"
+            aria-label="Clear Input"
+            class="p-2 text-slate-500 hover:text-slate-300 rounded-lg hover:bg-slate-800/60 transition-colors hidden"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Smooth Progress Bar -->
+      <div class="space-y-1.5">
+        <div class="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/50">
+          <div id="progressBar" class="h-full bg-slate-700 w-0 progress-bar-fill rounded-full"></div>
+        </div>
+        <div class="flex justify-between items-center text-xs font-mono text-slate-500">
+          <span id="entropyReadout">0.0 bits entropy</span>
+          <span id="strengthLabel">Enter password</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Dashboard Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <!-- Metric 1: Entropy Score -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg enterprise-card flex flex-col justify-between space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400">Entropy Score</span>
+          <span id="strengthBadge" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            Pending
+          </span>
+        </div>
+        <div class="space-y-1">
+          <div class="flex items-baseline gap-2">
+            <span id="entropyValue" class="text-3xl font-bold tracking-tight text-slate-100">0.0</span>
+            <span class="text-sm font-medium text-slate-500">Bits</span>
+          </div>
+          <p class="text-xs text-slate-400">
+            Standard mathematical entropy based on string length and pool size ($E = L \log_2 R$).
+          </p>
+        </div>
+      </div>
+
+      <!-- Metric 2: Pool Size & Diversity -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg enterprise-card flex flex-col justify-between space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400">Character Pool Diversity</span>
+          <span id="poolSizeBadge" class="text-xs font-mono text-slate-400">
+            0 Pool Size
+          </span>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-baseline gap-2">
+            <span id="poolSizeValue" class="text-3xl font-bold tracking-tight text-slate-100">0</span>
+            <span class="text-sm font-medium text-slate-500">Characters</span>
+          </div>
+          <!-- Pool Tags -->
+          <div class="flex flex-wrap gap-1.5 text-xs font-mono">
+            <span id="tagLower" class="px-2 py-0.5 rounded border border-slate-800 bg-slate-950 text-slate-600 transition-colors">a-z (26)</span>
+            <span id="tagUpper" class="px-2 py-0.5 rounded border border-slate-800 bg-slate-950 text-slate-600 transition-colors">A-Z (26)</span>
+            <span id="tagDigits" class="px-2 py-0.5 rounded border border-slate-800 bg-slate-950 text-slate-600 transition-colors">0-9 (10)</span>
+            <span id="tagSymbols" class="px-2 py-0.5 rounded border border-slate-800 bg-slate-950 text-slate-600 transition-colors">!@#$ (32)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metric 3: Breach Status (HIBP) -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg enterprise-card flex flex-col justify-between space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400">Breach Database Status</span>
+          <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wide">k-Anonymity Audit</span>
+        </div>
+        <div class="space-y-2">
+          <div id="breachBadgeContainer">
+            <span id="breachBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+              Awaiting Audit
+            </span>
+          </div>
+          <p id="breachDetailText" class="text-xs font-mono text-slate-500 truncate">
+            SHA-1 Prefix: <span id="sha1PrefixText" class="text-slate-400">-----</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Metric 4: Estimated Crack Duration -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg enterprise-card flex flex-col justify-between space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-400">Estimated Crack Time</span>
+          <span class="text-[10px] font-mono text-slate-500">@ 10 Billion Guesses/sec</span>
+        </div>
+        <div class="space-y-1">
+          <div id="crackTimeValue" class="text-2xl font-bold tracking-tight text-slate-100">
+            Instant
+          </div>
+          <p class="text-xs text-slate-400">
+            Offline brute-force estimation assuming a modern GPU cracking array.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Actionable Security Recommendations -->
+    <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl enterprise-card space-y-4">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Actionable Recommendations
+      </h2>
+      <ul id="recommendationList" class="space-y-2.5 text-xs md:text-sm text-slate-300">
+        <li class="flex items-start gap-2.5 text-slate-400">
+          <span class="mt-0.5 text-slate-600">•</span>
+          <span>Enter a password above to receive real-time security guidance.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Zero-Knowledge & k-Anonymity Architecture Explanation -->
+    <section class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 space-y-4 text-xs text-slate-400">
+      <div class="flex items-center justify-between cursor-pointer select-none" id="toggleExplanationHeader">
+        <h3 class="font-semibold text-slate-200 flex items-center gap-2 text-xs uppercase tracking-wider">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          How Zero-Knowledge k-Anonymity Works
+        </h3>
+        <span class="text-slate-500 hover:text-slate-300 text-xs font-mono" id="toggleExpBtn">[+] Expand</span>
+      </div>
+
+      <div id="explanationBody" class="hidden space-y-4 pt-2 border-t border-slate-800/60 leading-relaxed">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-[11px]">
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div class="text-slate-300 font-semibold">1. Client SHA-1 Hashing</div>
+            <p class="text-slate-500 font-sans text-xs">
+              Password string is converted into a 40-character SHA-1 hash on your system.
+            </p>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div class="text-slate-300 font-semibold">2. 5-Char Prefix Query</div>
+            <p class="text-slate-500 font-sans text-xs">
+              Only the first 5 hex characters (e.g. <code class="text-slate-300">5BAA6</code>) are sent to the API.
+            </p>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div class="text-slate-300 font-semibold">3. Local Suffix Match</div>
+            <p class="text-slate-500 font-sans text-xs">
+              The API returns hundreds of suffix hashes matching the prefix. Match comparison occurs in memory.
+            </p>
+          </div>
+        </div>
+        <p class="font-normal">
+          Because thousands of passwords share the exact same 5-character SHA-1 prefix, neither KeyGuard nor HaveIBeenPwned can reconstruct your original password from the prefix alone.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500 space-y-1">
+    <p>KeyGuard Zero-Knowledge Password Auditor &copy; 2026</p>
+    <p class="text-[11px] text-slate-600">Built with FastAPI & Tailwind CSS for privacy-first security audits.</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
