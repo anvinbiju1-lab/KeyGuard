@@ -70,6 +70,14 @@ if os.path.exists(static_dir):
             return FileResponse(index_path)
         return {"message": "KeyGuard API active. Static frontend file index.html not found."}
 
+
+@app.get("/google0c635ae408dfc850.html", include_in_schema=False)
+async def google_verification():
+    verification_path = os.path.join(os.path.dirname(__file__), "google0c635ae408dfc850.html")
+    if os.path.exists(verification_path):
+        return FileResponse(verification_path)
+    return {"message": "Verification file not found."}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
